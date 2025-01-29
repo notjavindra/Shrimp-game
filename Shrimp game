@@ -1,0 +1,139 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local userInput = game:GetService("UserInputService")
+
+-- Create ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "GameUI"
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0.3, 0, 0.4, 0)
+mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = false
+mainFrame.Parent = gui
+
+-- UICorner for rounded edges
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0.05, 0)
+uiCorner.Parent = mainFrame
+
+-- UIStroke for a thin border
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(80, 80, 80)
+uiStroke.Thickness = 1.5
+uiStroke.Parent = mainFrame
+
+-- Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "Game UI"
+titleLabel.Size = UDim2.new(1, 0, 0.15, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = mainFrame
+
+-- Function to create buttons
+local function createButton(name, text, position)
+	local button = Instance.new("TextButton")
+	button.Name = name
+	button.Size = UDim2.new(0.8, 0, 0.15, 0)
+	button.Position = UDim2.new(0.1, 0, position, 0)
+	button.BackgroundTransparency = 0.2
+	button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextSize = 18
+	button.Font = Enum.Font.GothamBold
+	button.Text = text
+	button.Parent = mainFrame
+
+	-- UICorner for rounded buttons
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.1, 0)
+	corner.Parent = button
+
+	return button
+end
+
+-- Create Teleport Buttons
+local teleportButtons = {
+	{name = "TeleportRedLight", text = "Teleport to Red Light", position = Vector3.new(131, 2, 743)},
+	{name = "TeleportLobby", text = "Teleport to Lobby", position = Vector3.new(76.6, 5.52, -84.1)},
+	{name = "TeleportPiggyBank", text = "Teleport to Piggy Bank", position = Vector3.new(73.803, 25.388, -73.896)}
+}
+
+for i, data in ipairs(teleportButtons) do
+	local button = createButton(data.name, data.text, 0.15 + (i - 1) * 0.18)
+	button.MouseButton1Click:Connect(function()
+		if character and character:FindFirstChild("HumanoidRootPart") then
+			character.HumanoidRootPart.CFrame = CFrame.new(data.position)
+		end
+	end)
+end
+
+-- Function to create input boxes
+local function createTextBox(name, placeholder, position)
+	local textBox = Instance.new("TextBox")
+	textBox.Name = name
+	textBox.Size = UDim2.new(0.8, 0, 0.12, 0)
+	textBox.Position = UDim2.new(0.1, 0, position, 0)
+	textBox.BackgroundTransparency = 0.3
+	textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textBox.TextSize = 18
+	textBox.Font = Enum.Font.Gotham
+	textBox.PlaceholderText = placeholder
+	textBox.ClearTextOnFocus = false
+	textBox.Parent = mainFrame
+
+	-- UICorner for rounded input box
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.1, 0)
+	corner.Parent = textBox
+
+	return textBox
+end
+
+-- Create WalkSpeed and JumpPower Input Boxes
+local walkSpeedBox = createTextBox("WalkSpeedBox", "Enter WalkSpeed", 0.7)
+local jumpPowerBox = createTextBox("JumpPowerBox", "Enter JumpPower", 0.85)
+
+-- UI Toggle with Shift + Click
+userInput.InputBegan:Connect(function(input, gameProcessed)
+	-- Check if the input is not game processed, is a left mouse button click, and if the 'R' key is held down
+	if not gameProcessed and input.UserInputType == Enum.UserInputType.MouseButton1 then
+		-- If the 'R' key is down (Shift can be checked if needed)
+		if userInput:IsKeyDown(Enum.KeyCode.R) then
+			mainFrame.Visible = not mainFrame.Visible
+		end
+	end
+end)
+
+-- Speed and Jump Customization Loop
+-- Speed and Jump Customization Loop
+task.spawn(function()
+	while true do
+		-- Check if humanoid exists
+		if character and character:FindFirstChild("Humanoid") then
+			-- Update WalkSpeed and JumpPower from input boxes
+			humanoid.WalkSpeed = tonumber(walkSpeedBox.Text) or 16
+			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 50
+		end
+		task.wait(0.0) -- Update every 0.1 seconds
+	end
+end)
+
+
+-- Handle Respawn
+player.CharacterAdded:Connect(function(newCharacter)
+	character = newCharacter
+	humanoid = character:WaitForChild("Humanoid")
+end)
