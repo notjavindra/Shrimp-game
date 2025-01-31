@@ -9,6 +9,11 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "GameUI"
 gui.Parent = player:WaitForChild("PlayerGui")
 
+local StarterGui = game:GetService("StarterGui")
+
+
+
+
 -- Create Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
@@ -24,6 +29,59 @@ mainFrame.Parent = gui
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.05, 0)
 uiCorner.Parent = mainFrame
+
+if userInput.TouchEnabled and not userInput.KeyboardEnabled then
+	local mobileButton = Instance.new("ImageButton")
+	mobileButton.Size = UDim2.new(0, 62,0, 57)
+	mobileButton.Position = UDim2.new(0.055, 0,0.103, 0)
+	mobileButton.Image = "rbxassetid://139700367904039"
+	mobileButton.BackgroundTransparency = 1
+	mobileButton.Parent = gui
+
+	local dragging = false
+	local offset = Vector2.new()
+
+	mobileButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			offset = Vector2.new(input.Position.X - mobileButton.AbsolutePosition.X, input.Position.Y - mobileButton.AbsolutePosition.Y)
+		end
+	end)
+
+	userInput.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.Touch then
+			mobileButton.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
+		end
+	end)
+
+	userInput.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+	local uiCorner = Instance.new("UICorner")
+	uiCorner.CornerRadius = UDim.new(0, 7)
+	uiCorner.Parent = mobileButton
+	
+	StarterGui:SetCore("SendNotification", {
+		Title = "Shrimp Game Script";  -- The title of the notification
+		Text = "Script Load";  -- The message inside the notification
+		Duration = 5;  -- How long the notification will stay on screen (in seconds)
+	})
+
+	StarterGui:SetCore("SendNotification", {
+		Title = "Shrimp Game Script";  -- The title of the notification
+		Text = "Welcome to Shrimp game script.";  -- The message inside the notification
+		Duration = 5;  -- How long the notification will stay on screen (in seconds)
+	})
+
+
+	mobileButton.MouseButton1Click:Connect(function()
+		mainFrame.Visible = not mainFrame.Visible
+	end)
+end
+
+
 
 -- UIStroke for a thin border
 local uiStroke = Instance.new("UIStroke")
@@ -125,9 +183,9 @@ task.spawn(function()
 		if character and character:FindFirstChild("Humanoid") then
 			-- Update WalkSpeed and JumpPower from input boxes
 			humanoid.WalkSpeed = tonumber(walkSpeedBox.Text) or 16
-			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 50
+			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 7.2
 		end
-		task.wait(0.0) -- Update every 0.1 seconds
+		task.wait(0.1) -- Update every 0.1 seconds
 	end
 end)
 
