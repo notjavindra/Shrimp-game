@@ -4,7 +4,7 @@ local humanoid = character:WaitForChild("Humanoid")
 
 local userInput = game:GetService("UserInputService")
 
--- Create ScreenGui
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "GameUI"
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -14,7 +14,7 @@ local StarterGui = game:GetService("StarterGui")
 
 
 
--- Create Main Frame
+
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0.3, 0, 0.4, 0)
@@ -25,10 +25,12 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 mainFrame.Parent = gui
 
--- UICorner for rounded edges
+
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.05, 0)
 uiCorner.Parent = mainFrame
+
+
 
 if userInput.TouchEnabled and not userInput.KeyboardEnabled then
 	local mobileButton = Instance.new("ImageButton")
@@ -63,33 +65,77 @@ if userInput.TouchEnabled and not userInput.KeyboardEnabled then
 	uiCorner.CornerRadius = UDim.new(0, 7)
 	uiCorner.Parent = mobileButton
 	
-	StarterGui:SetCore("SendNotification", {
-		Title = "Shrimp Game Script";  -- The title of the notification
-		Text = "Script Load";  -- The message inside the notification
-		Duration = 5;  -- How long the notification will stay on screen (in seconds)
-	})
-
-	StarterGui:SetCore("SendNotification", {
-		Title = "Shrimp Game Script";  -- The title of the notification
-		Text = "Welcome to Shrimp game script.";  -- The message inside the notification
-		Duration = 5;  -- How long the notification will stay on screen (in seconds)
-	})
-
-
+	
 	mobileButton.MouseButton1Click:Connect(function()
 		mainFrame.Visible = not mainFrame.Visible
 	end)
 end
 
+local userInput = game:GetService("UserInputService")
 
 
--- UIStroke for a thin border
+
+if userInput.KeyboardEnabled then
+	local dragging = false
+	local dragStart, startPos
+
+	mainFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = mainFrame.Position
+		end
+	end)
+
+	mainFrame.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = input.Position - dragStart
+			mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+
+	mainFrame.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = false
+		end
+	end)
+end
+
+if userInput.TouchEnabled then 
+	local dragging = false
+	local offset = Vector2.new()
+
+	mainFrame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			offset = Vector2.new(input.Position.X - mainFrame.AbsolutePosition.X, input.Position.Y - mainFrame.AbsolutePosition.Y)
+		end
+	end)
+
+	mainFrame.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.Touch then
+			local newPosition = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
+			mainFrame.Position = newPosition
+		end
+	end)
+
+	mainFrame.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+end
+
+
+
+
+
 local uiStroke = Instance.new("UIStroke")
 uiStroke.Color = Color3.fromRGB(80, 80, 80)
 uiStroke.Thickness = 1.5
 uiStroke.Parent = mainFrame
 
--- Title Label
+
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Text = "Game UI"
 titleLabel.Size = UDim2.new(1, 0, 0.15, 0)
@@ -99,7 +145,7 @@ titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = mainFrame
 
--- Function to create buttons
+
 local function createButton(name, text, position)
 	local button = Instance.new("TextButton")
 	button.Name = name
@@ -113,7 +159,7 @@ local function createButton(name, text, position)
 	button.Text = text
 	button.Parent = mainFrame
 
-	-- UICorner for rounded buttons
+	
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.1, 0)
 	corner.Parent = button
@@ -121,7 +167,7 @@ local function createButton(name, text, position)
 	return button
 end
 
--- Create Teleport Buttons
+
 local teleportButtons = {
 	{name = "TeleportRedLight", text = "Teleport to Red Light", position = Vector3.new(131, 2, 743)},
 	{name = "TeleportLobby", text = "Teleport to Lobby", position = Vector3.new(76.6, 5.52, -84.1)},
@@ -137,7 +183,7 @@ for i, data in ipairs(teleportButtons) do
 	end)
 end
 
--- Function to create input boxes
+
 local function createTextBox(name, placeholder, position)
 	local textBox = Instance.new("TextBox")
 	textBox.Name = name
@@ -152,7 +198,7 @@ local function createTextBox(name, placeholder, position)
 	textBox.ClearTextOnFocus = false
 	textBox.Parent = mainFrame
 
-	-- UICorner for rounded input box
+
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.1, 0)
 	corner.Parent = textBox
@@ -160,38 +206,52 @@ local function createTextBox(name, placeholder, position)
 	return textBox
 end
 
--- Create WalkSpeed and JumpPower Input Boxes
-local walkSpeedBox = createTextBox("WalkSpeedBox", "Enter WalkSpeed", 0.7)
-local jumpPowerBox = createTextBox("JumpPowerBox", "Enter JumpPower", 0.85)
 
--- UI Toggle with Shift + Click
+local walkSpeedBox = createTextBox("WalkSpeedBox", "Enter WalkSpeed", 0.7)
+local jumpPowerBox = createTextBox("JumpHeightBox", "Enter JumpHeight", 0.85)
+
+
 userInput.InputBegan:Connect(function(input, gameProcessed)
-	-- Check if the input is not game processed, is a left mouse button click, and if the 'R' key is held down
 	if not gameProcessed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-		-- If the 'R' key is down (Shift can be checked if needed)
+
 		if userInput:IsKeyDown(Enum.KeyCode.R) then
 			mainFrame.Visible = not mainFrame.Visible
 		end
 	end
 end)
 
--- Speed and Jump Customization Loop
--- Speed and Jump Customization Loop
+
 task.spawn(function()
 	while true do
-		-- Check if humanoid exists
+	
 		if character and character:FindFirstChild("Humanoid") then
-			-- Update WalkSpeed and JumpPower from input boxes
+
 			humanoid.WalkSpeed = tonumber(walkSpeedBox.Text) or 16
 			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 7.2
 		end
-		task.wait(0.1) -- Update every 0.1 seconds
+		task.wait(0.1) 
 	end
 end)
 
 
--- Handle Respawn
 player.CharacterAdded:Connect(function(newCharacter)
 	character = newCharacter
 	humanoid = character:WaitForChild("Humanoid")
 end)
+
+
+
+
+StarterGui:SetCore("SendNotification", {
+	Title = "Shrimp Game Script";  
+	Text = "Script Load";  
+	Duration = 5;  
+})
+
+StarterGui:SetCore("SendNotification", {
+	Title = "Shrimp Game Script";  
+	Text = "Welcome to Shrimp game script.";  
+	Duration = 5;  
+})
+
+
