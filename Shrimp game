@@ -1,84 +1,97 @@
+-- Get the local player and character
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
 
 local userInput = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local runService = game:GetService("RunService")
 
-
+-- Create the main ScreenGui
 local gui = Instance.new("ScreenGui")
 gui.Name = "GameUI"
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local StarterGui = game:GetService("StarterGui")
-
-
-
-
-
+-- Main Frame (initially hidden)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0.3, 0, 0.4, 0)
-mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+mainFrame.Size = UDim2.new(0, 648,0, 452)
+mainFrame.Position = UDim2.new(0.293, 0,0.224, 0)
 mainFrame.BackgroundTransparency = 0.2
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 mainFrame.Parent = gui
-
 
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.05, 0)
 uiCorner.Parent = mainFrame
 
+-- Create a scrolling frame inside mainFrame so items can be scrolled if needed
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Name = "ScrollFrame"
+scrollFrame.Size = UDim2.new(0, 648,0, 452)
+scrollFrame.Position = UDim2.new(0, 0,0, 0)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.Parent = mainFrame
 
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 35)
+listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
+-- Title label (sits on top of mainFrame)
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "Game UI"
+titleLabel.Size = UDim2.new(1, 0,0.08, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = scrollFrame
+
+-- (Optional) Mobile button to toggle UI if using a touch device
 if userInput.TouchEnabled and not userInput.KeyboardEnabled then
 	local mobileButton = Instance.new("ImageButton")
-	mobileButton.Size = UDim2.new(0, 62,0, 57)
-	mobileButton.Position = UDim2.new(0.055, 0,0.103, 0)
+	mobileButton.Size = UDim2.new(0, 62, 0, 57)
+	mobileButton.Position = UDim2.new(0.055, 0, 0.103, 0)
 	mobileButton.Image = "rbxassetid://139700367904039"
 	mobileButton.BackgroundTransparency = 1
 	mobileButton.Parent = gui
 
 	local dragging = false
 	local offset = Vector2.new()
-
 	mobileButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			offset = Vector2.new(input.Position.X - mobileButton.AbsolutePosition.X, input.Position.Y - mobileButton.AbsolutePosition.Y)
 		end
 	end)
-
 	userInput.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.Touch then
 			mobileButton.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
 		end
 	end)
-
 	userInput.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
 		end
 	end)
-	local uiCorner = Instance.new("UICorner")
-	uiCorner.CornerRadius = UDim.new(0, 7)
-	uiCorner.Parent = mobileButton
-	
-	
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 7)
+	corner.Parent = mobileButton
+
 	mobileButton.MouseButton1Click:Connect(function()
 		mainFrame.Visible = not mainFrame.Visible
 	end)
 end
 
-local userInput = game:GetService("UserInputService")
-
-
-
+-- Make mainFrame draggable with mouse or touch
 if userInput.KeyboardEnabled then
 	local dragging = false
 	local dragStart, startPos
-
 	mainFrame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
@@ -86,14 +99,12 @@ if userInput.KeyboardEnabled then
 			startPos = mainFrame.Position
 		end
 	end)
-
 	mainFrame.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 			local delta = input.Position - dragStart
 			mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
-
 	mainFrame.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
@@ -101,24 +112,20 @@ if userInput.KeyboardEnabled then
 	end)
 end
 
-if userInput.TouchEnabled then 
+if userInput.TouchEnabled then
 	local dragging = false
 	local offset = Vector2.new()
-
 	mainFrame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			offset = Vector2.new(input.Position.X - mainFrame.AbsolutePosition.X, input.Position.Y - mainFrame.AbsolutePosition.Y)
 		end
 	end)
-
 	mainFrame.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.Touch then
-			local newPosition = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
-			mainFrame.Position = newPosition
+			mainFrame.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
 		end
 	end)
-
 	mainFrame.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
@@ -126,40 +133,27 @@ if userInput.TouchEnabled then
 	end)
 end
 
-
-
-
-
 local uiStroke = Instance.new("UIStroke")
 uiStroke.Color = Color3.fromRGB(80, 80, 80)
 uiStroke.Thickness = 1.5
 uiStroke.Parent = mainFrame
 
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Text = "Game UI"
-titleLabel.Size = UDim2.new(1, 0, 0.15, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.TextSize = 20
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = mainFrame
-
-
-local function createButton(name, text, position)
+-- Utility function: create a button inside the scrollFrame
+local function createButton(name, text, layoutOrder)
 	local button = Instance.new("TextButton")
 	button.Name = name
-	button.Size = UDim2.new(0.8, 0, 0.15, 0)
-	button.Position = UDim2.new(0.1, 0, position, 0)
+	button.Size = UDim2.new(0, 258,0, 66)
 	button.BackgroundTransparency = 0.2
 	button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	button.TextColor3 = Color3.fromRGB(255, 255, 255)
 	button.TextSize = 18
 	button.Font = Enum.Font.GothamBold
 	button.Text = text
-	button.Parent = mainFrame
+	button.LayoutOrder = layoutOrder or 1
+	button.AnchorPoint = Vector2.new(0.5, 0)
+	button.Position = UDim2.new(0.5, 0, 0, 0)
+	button.Parent = scrollFrame
 
-	
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.1, 0)
 	corner.Parent = button
@@ -167,28 +161,11 @@ local function createButton(name, text, position)
 	return button
 end
 
-
-local teleportButtons = {
-	{name = "TeleportRedLight", text = "Teleport to Red Light", position = Vector3.new(131, 2, 743)},
-	{name = "TeleportLobby", text = "Teleport to Lobby", position = Vector3.new(76.6, 5.52, -84.1)},
-	{name = "TeleportPiggyBank", text = "Teleport to Piggy Bank", position = Vector3.new(73.803, 25.388, -73.896)}
-}
-
-for i, data in ipairs(teleportButtons) do
-	local button = createButton(data.name, data.text, 0.15 + (i - 1) * 0.18)
-	button.MouseButton1Click:Connect(function()
-		if character and character:FindFirstChild("HumanoidRootPart") then
-			character.HumanoidRootPart.CFrame = CFrame.new(data.position)
-		end
-	end)
-end
-
-
-local function createTextBox(name, placeholder, position)
+-- Utility function: create a TextBox inside the scrollFrame
+local function createTextBox(name, placeholder, layoutOrder)
 	local textBox = Instance.new("TextBox")
 	textBox.Name = name
-	textBox.Size = UDim2.new(0.8, 0, 0.12, 0)
-	textBox.Position = UDim2.new(0.1, 0, position, 0)
+	textBox.Size = UDim2.new(0, 258,0, 66)
 	textBox.BackgroundTransparency = 0.3
 	textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -196,8 +173,10 @@ local function createTextBox(name, placeholder, position)
 	textBox.Font = Enum.Font.Gotham
 	textBox.PlaceholderText = placeholder
 	textBox.ClearTextOnFocus = false
-	textBox.Parent = mainFrame
-
+	textBox.LayoutOrder = layoutOrder or 1
+	textBox.AnchorPoint = Vector2.new(0.5, 0)
+	textBox.Position = UDim2.new(0.5, 0, 0, 0)
+	textBox.Parent = scrollFrame
 
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0.1, 0)
@@ -206,52 +185,135 @@ local function createTextBox(name, placeholder, position)
 	return textBox
 end
 
-
-local walkSpeedBox = createTextBox("WalkSpeedBox", "Enter WalkSpeed", 0.7)
-local jumpPowerBox = createTextBox("JumpHeightBox", "Enter JumpHeight", 0.85)
-
-
-userInput.InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.UserInputType == Enum.UserInputType.MouseButton1 then
-
-		if userInput:IsKeyDown(Enum.KeyCode.R) then
-			mainFrame.Visible = not mainFrame.Visible
+-- TELEPORT BUTTONS (example positions; clicking will teleport you)
+local teleportButtons = {
+	{name = "TeleportRedLight", text = "Teleport to Red Light", position = Vector3.new(131, 2, 743)},
+	{name = "TeleportLobby", text = "Teleport to Lobby", position = Vector3.new(76.6, 5.52, -84.1)},
+	{name = "TeleportPiggyBank", text = "Teleport to Piggy Bank", position = Vector3.new(73.803, 25.388, -73.896)}
+}
+for i, data in ipairs(teleportButtons) do
+	local button = createButton(data.name, data.text, i)
+	button.MouseButton1Click:Connect(function()
+		if character and character:FindFirstChild("HumanoidRootPart") then
+			character.HumanoidRootPart.CFrame = CFrame.new(data.position)
 		end
+	end)
+end
+
+------------------------------
+-- FLY MODE CODE
+------------------------------
+local flying = false
+local flySpeed = 50
+local bv, bg  -- references to BodyVelocity and BodyGyro
+
+local function startFlying()
+	if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+	local hrp = character.HumanoidRootPart
+	-- Create a BodyVelocity to control movement
+	bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(1e4, 1e4, 1e4)
+	bv.Velocity = Vector3.new(0, 0, 0)
+	bv.Parent = hrp
+
+	-- Create a BodyGyro to control orientation
+	bg = Instance.new("BodyGyro")
+	bg.MaxTorque = Vector3.new(1e4, 1e4, 1e4)
+	bg.CFrame = hrp.CFrame
+	bg.Parent = hrp
+
+	flying = true
+
+	-- Update the fly movement every frame
+	spawn(function()
+		while flying and hrp.Parent do
+			local direction = Vector3.new(0, 0, 0)
+			local cam = workspace.CurrentCamera
+			-- Use WASD for directional input:
+			if userInput:IsKeyDown(Enum.KeyCode.W) then
+				direction = direction + cam.CFrame.LookVector
+			end
+			if userInput:IsKeyDown(Enum.KeyCode.S) then
+				direction = direction - cam.CFrame.LookVector
+			end
+			if userInput:IsKeyDown(Enum.KeyCode.A) then
+				direction = direction - cam.CFrame.RightVector
+			end
+			if userInput:IsKeyDown(Enum.KeyCode.D) then
+				direction = direction + cam.CFrame.RightVector
+			end
+
+			-- Normalize the direction to prevent faster diagonal movement
+			if direction.Magnitude > 0 then
+				direction = direction.Unit
+			end
+
+			bv.Velocity = direction * flySpeed
+			bg.CFrame = cam.CFrame
+			runService.RenderStepped:Wait()
+		end
+	end)
+end
+
+local function stopFlying()
+	flying = false
+	if bv then bv:Destroy() bv = nil end
+	if bg then bg:Destroy() bg = nil end
+end
+
+-- Create the Fly Mode toggle button (layout order 4)
+local flyButton = createButton("FlyModeButton", "Toggle Fly", 4)
+flyButton.MouseButton1Click:Connect(function()
+	if flying then
+		stopFlying()
+		flyButton.Text = "Toggle Fly"
+	else
+		startFlying()
+		flyButton.Text = "Disable Fly"
 	end
 end)
 
+------------------------------
+-- WALK SPEED & JUMP HEIGHT
+------------------------------
+local walkSpeedBox = createTextBox("WalkSpeedBox", "Enter WalkSpeed", 5)
+local jumpPowerBox = createTextBox("JumpHeightBox", "Enter JumpHeight", 6)
 
-task.spawn(function()
+-- Update walk speed and jump height continuously
+spawn(function()
 	while true do
-	
 		if character and character:FindFirstChild("Humanoid") then
-
 			humanoid.WalkSpeed = tonumber(walkSpeedBox.Text) or 16
-			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 7.2
+			-- (Note: In Roblox’s newer physics the property is "JumpPower". 
+			-- If you prefer JumpHeight, make sure your game supports it.)
+			humanoid.JumpHeight = tonumber(jumpPowerBox.Text) or 50
 		end
-		task.wait(0.1) 
+		task.wait(0.1)
 	end
 end)
 
-
+-- Reconnect if character is added again (e.g. on respawn)
 player.CharacterAdded:Connect(function(newCharacter)
 	character = newCharacter
 	humanoid = character:WaitForChild("Humanoid")
+	hrp = character:WaitForChild("HumanoidRootPart")
 end)
 
+-- Hotkey to toggle UI visibility (press R)
+userInput.InputBegan:Connect(function(input, gameProcessed)
+		if userInput:IsKeyDown(Enum.KeyCode.RightShift) then
+			mainFrame.Visible = not mainFrame.Visible
+	end
+end)
 
-
-
+-- Send startup notifications
 StarterGui:SetCore("SendNotification", {
-	Title = "Shrimp Game Script";  
-	Text = "Script Load";  
-	Duration = 5;  
+	Title = "Shrimp Game Script";
+	Text = "Script Loaded";
+	Duration = 5;
 })
-
 StarterGui:SetCore("SendNotification", {
-	Title = "Shrimp Game Script";  
-	Text = "Welcome to Shrimp game script.";  
-	Duration = 5;  
+	Title = "Shrimp Game Script";
+	Text = "Welcome to Shrimp game script.";
+	Duration = 5;
 })
-
-
